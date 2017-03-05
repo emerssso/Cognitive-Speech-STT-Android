@@ -20,12 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
-
-/**
- * Created by Conner on 3/4/2017.
- */
-
-class SpeechRecoHandler extends Handler implements ISpeechRecognitionServerEvents {
+public class SpeechRecoHandler extends Handler implements ISpeechRecognitionServerEvents {
 
     private static final String TAG = "SpeechRecoHandler";
 
@@ -74,6 +69,9 @@ class SpeechRecoHandler extends Handler implements ISpeechRecognitionServerEvent
                                 " Text=\"" + response.Results[i].DisplayText + "\""));
 
                         File dir = Environment.getExternalStorageDirectory();
+                        boolean result = dir.mkdirs();
+                        Log.d(TAG, "run: result = " + result);
+
                         File file = new File(dir, filename + ".txt");
 
                         FileWriter fw = null;
@@ -82,15 +80,18 @@ class SpeechRecoHandler extends Handler implements ISpeechRecognitionServerEvent
                             fw = new FileWriter(file.getAbsoluteFile(), true);
                             bw = new BufferedWriter(fw);
 
-                            bw.write(response.Results[i].DisplayText);
+                            final String value = filename + "\n" + response.Results[i].DisplayText;
+                            Log.d(TAG, "run: about to write file value: " + value);
+                            Log.d(TAG, "run: to file: " + file.getAbsolutePath());
+                            bw.write(value);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.w(TAG, "run: failed to write file", e);
                         } finally {
                             if(bw != null) {
                                 try {
                                     bw.close();
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    Log.w(TAG, "run: failed to close file", e);
                                 }
                             }
 
@@ -98,7 +99,7 @@ class SpeechRecoHandler extends Handler implements ISpeechRecognitionServerEvent
                                 try {
                                     fw.close();
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    Log.w(TAG, "run: failed to close file", e);
                                 }
                             }
                         }
@@ -120,7 +121,7 @@ class SpeechRecoHandler extends Handler implements ISpeechRecognitionServerEvent
         });
     }
 
-    public void SendAudioHelper(final String filename) {
+    void SendAudioHelper(final String filename) {
         this.filename = filename;
 
         post(new Runnable() {
